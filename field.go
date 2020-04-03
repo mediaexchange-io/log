@@ -88,7 +88,7 @@ func stringValue(field Field, quoted bool) string {
 			return "true"
 		}
 		return "false"
-	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return strconv.FormatInt(field.IntValue, 10)
 	case reflect.String:
 		if quoted {
