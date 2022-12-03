@@ -32,6 +32,7 @@ const (
 
 var (
 	conn        *net.UDPConn
+	emitJson    bool
 	level       Level
 	programName string
 	writer      io.Writer
@@ -40,6 +41,9 @@ var (
 // init creates a default console logger that can be used immediately with no
 // further configuration necessary.
 func init() {
+	// By default the logger emits formatted text, not JSON
+	emitJson = false
+
 	// Set the minimum logging level emitted to INFO
 	level = INFO
 
@@ -48,6 +52,11 @@ func init() {
 
 	// Default to stderr which is the Posix standard as it's unbuffered.
 	writer = os.Stderr
+}
+
+// SetEmitJson changes the type of output sent to the aggregator.
+func SetEmitJson(b bool) {
+	emitJson = b
 }
 
 // SetLevel changes the minimum level that is emitted. This is used to prevent
@@ -78,6 +87,8 @@ func SetServer(address string) {
 	if err != nil {
 		panic(err)
 	}
+
+	emitJson = true
 }
 
 // Debug emits a message with the DEBUG level.
@@ -116,11 +127,23 @@ func emit(level Level, message string, fields []Field) {
 	// Send the message to the log aggregator. Note that UDP is fast, but
 	// unreliable. Messages may be received out-of-order or not at all.
 	if conn != nil {
-		go conn.Write([]byte("{\"time\":" + strconv.FormatInt(t.UnixNano(), 10) + ",\"name\":\"" + programName + "\",\"level\":\"" + level.String() + "\",\"message\":\"" + message + "\",\"fields\":" + fieldJson(fields) + "}"))
+		go conn.Write(json(t, message, fields))
 	}
 
 	// Send the message to the console logger.
-	writer.Write([]byte(t.Format(ISO8601Micro) + " [" + programName + "] " + level.String() + " " + message + fieldString(fields) + "\n"))
+	if emitJson {
+		writer.Write(json(t, message, fields))
+	} else {
+		writer.Write(text(t, message, fields))
+	}
+}
+
+func json(t time.Time, message string, fields []Field) []byte {
+	return []byte("{\"time\":" + strconv.FormatInt(t.UnixNano(), 10) + ",\"name\":\"" + programName + "\",\"level\":\"" + level.String() + "\",\"message\":\"" + message + "\",\"fields\":" + fieldJson(fields) + "}")
+}
+
+func text(t time.Time, message string, fields []Field) []byte {
+	return []byte(t.Format(ISO8601Micro) + " [" + programName + "] " + level.String() + " " + message + fieldString(fields) + "\n")
 }
 
 func fieldJson(fields []Field) string {

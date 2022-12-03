@@ -24,78 +24,54 @@ import (
 // Field stores a name/value pair to be formatted by the emitter.
 type Field struct {
 	Name        string
-	Type        reflect.Kind
-	BoolValue   bool
-	IntValue    int64
 	StringValue string
+	Quoted      bool
 }
 
-// Bool returns a Field that contains a boolean value.
-func Bool(name string, value bool) Field {
-	return Field{Name:name, Type:reflect.Bool, BoolValue:value}
-}
+// F returns a field with any value converted to a string, ready for logging.
+func F(name string, value any) Field {
+	f := Field{Name: name, Quoted: false}
+	t := reflect.TypeOf(value)
+	v := reflect.ValueOf(value)
 
-// Int returns a Field that contains a default integer.
-func Int(name string, value int) Field {
-	return Field{Name:name, Type:reflect.Int, IntValue:int64(value)}
-}
+	switch t.Kind() {
+	case reflect.Bool:
+		if v.Bool() {
+			f.StringValue = "true"
+		} else {
+			f.StringValue = "false"
+		}
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		f.StringValue = strconv.FormatInt(v.Int(), 10)
+	case reflect.String:
+		f.StringValue = v.String()
+		f.Quoted = true
+	default:
+		f.StringValue = "<[Unknown Type " + t.Kind().String() + "]>"
+	}
 
-// Int8 returns a Field that contains an 8-bit integer
-func Int8(name string, value int8) Field {
-	return Field{Name:name, Type:reflect.Int8, IntValue:int64(value)}
-}
-
-// Int16 returns a Field that contains an 16-bit integer
-func Int16(name string, value int16) Field {
-	return Field{Name:name, Type:reflect.Int16, IntValue:int64(value)}
-}
-
-// Int32 returns a Field that contains an 32-bit integer
-func Int32(name string, value int32) Field {
-	return Field{Name:name, Type:reflect.Int32, IntValue:int64(value)}
-}
-
-// Int64 returns a Field that contains an 64-bit integer
-func Int64(name string, value int64) Field {
-	return Field{Name:name, Type:reflect.Int64, IntValue:value}
-}
-
-// String returns a Field that contains a string.
-func String(name string, value string) Field {
-	return Field{Name:name, Type:reflect.String, StringValue:value}
+	return f
 }
 
 // Err returns a Field that contains the message from an error.
 func Err(value error) Field {
-	return Field{Name:"error", Type:reflect.String, StringValue:value.Error()}
-}
-
-// Json returns the contents of the Field as `"key":value`.
-func (field Field) Json() string {
-	return "\"" + field.Name + "\":" + stringValue(field, true)
+	return Field{Name: "error", Quoted: true, StringValue: value.Error()}
 }
 
 // String returns the contents of the Field as `key=value`.
 func (field Field) String() string {
-	return field.Name + "=" + stringValue(field, false)
+	return field.Name + "=" + field.StringValue
 }
 
-// stringValue converts the field's value into a string.
-func stringValue(field Field, quoted bool) string {
-	switch field.Type {
-	case reflect.Bool:
-		if field.BoolValue {
-			return "true"
-		}
-		return "false"
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return strconv.FormatInt(field.IntValue, 10)
-	case reflect.String:
-		if quoted {
-			return "\"" + field.StringValue + "\""
-		}
-		return field.StringValue
-	default:
-		panic("Invalid type")
+// Json returns the contents of the Field as `"key":value`.
+func (field Field) Json() string {
+	return "\"" + field.Name + "\":" + quotedValue(field)
+}
+
+// quotedValue converts the field's value into a string.
+func quotedValue(field Field) string {
+	if field.Quoted {
+		return "\"" + field.StringValue + "\""
 	}
+	return field.StringValue
 }

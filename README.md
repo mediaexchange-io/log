@@ -1,9 +1,6 @@
-[![Build Status](https://travis-ci.org/mediaexchange/log.svg)](https://travis-ci.org/mediaexchange/log)
-[![GoDoc](https://godoc.org/github.com/mediaexchange/log/github?status.svg)](https://godoc.org/github.com/mediaexchange/log)
+[![GoDoc](https://godoc.org/github.com/mediaexchange-io/log/github?status.svg)](https://godoc.org/github.com/mediaexchange-io/log)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Go version](https://img.shields.io/badge/go-~%3E1.12-green.svg)](https://golang.org/doc/devel/release.html#go1.12)
-[![Go version](https://img.shields.io/badge/go-~%3E1.13-green.svg)](https://golang.org/doc/devel/release.html#go1.13)
-[![Go version](https://img.shields.io/badge/go-~%3E1.14-green.svg)](https://golang.org/doc/devel/release.html#go1.14)
+[![Go version](https://img.shields.io/badge/go-~%3E1.19-green.svg)](https://golang.org/doc/devel/release.html#go1.19)
 
 # log
 
@@ -52,6 +49,8 @@ log.Info("The quick brown fox")
 // Output: {"time":1554370662469959000,"name":"main","level":"INFO","message":"The quick brown fox"} 
 ```
 
+`log` 
+
 ## Contributing
 
  1.  Fork it
@@ -62,7 +61,7 @@ log.Info("The quick brown fox")
 
 ## Maintainers
 
-* [Media Exchange](http://github.com/MediaExchange/)
+* [Media Exchange](http://github.com/mediaexchange-io/)
 
 ## License
 

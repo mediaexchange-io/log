@@ -18,11 +18,12 @@ package log
 
 import (
 	"bytes"
-	"github.com/MediaExchange/assert"
 	"net"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/mediaexchange-io/assert"
 )
 
 func TestSetLevel_WithWarning(t *testing.T) {
@@ -59,7 +60,7 @@ func TestEmit_WithWarnAndFields_ShouldNotBeEmpty(t *testing.T) {
 	var buf bytes.Buffer
 	SetWriter(&buf)
 
-	Warn("test", Int16("port", 9000), String("hostname", "localhost"))
+	Warn("test", F("port", 9000), F("hostname", "localhost"))
 
 	s := buf.String()
 	Assert.That(s).IsNotEmpty()
@@ -117,7 +118,7 @@ func TestSetServer_WithServer_ShouldReceive(t *testing.T) {
 	// Send a message to the server.
 	SetServer("localhost:9999")
 	wait.Add(1)
-	Warn("test", Int16("port", 9000), String("hostname", "localhost"))
+	Warn("test", F("port", 9000), F("hostname", "localhost"))
 
 	// Wait for the test to complete.
 	wait.Wait()

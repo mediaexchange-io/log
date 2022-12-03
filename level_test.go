@@ -17,7 +17,7 @@
 package log
 
 import (
-	"github.com/MediaExchange/assert"
+	"github.com/mediaexchange-io/assert"
 	"testing"
 )
 

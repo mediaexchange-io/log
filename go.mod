@@ -1,5 +1,5 @@
-module github.com/MediaExchange/log
+module github.com/mediaexchange-io/log
 
-go 1.14
+go 1.19
 
-require github.com/MediaExchange/assert v1.0.0
+require github.com/mediaexchange-io/assert v1.5.0

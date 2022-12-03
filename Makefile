@@ -1,7 +1,4 @@
-.PHONY: build test bench
-
-build:
-	go build
+.PHONY: test bench
 
 test:
 	go test
