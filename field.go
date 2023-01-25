@@ -41,6 +41,8 @@ func F(name string, value any) Field {
 		} else {
 			f.StringValue = "false"
 		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		f.StringValue = strconv.FormatUint(v.Uint(), 10)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		f.StringValue = strconv.FormatInt(v.Int(), 10)
 	case reflect.String:
@@ -54,13 +56,14 @@ func F(name string, value any) Field {
 }
 
 // Err returns a Field that contains the message from an error.
-func Err(value error) Field {
-	return Field{Name: "error", Quoted: true, StringValue: value.Error()}
+func Err(value error) (field Field) {
+	field = Field{Name: "error", StringValue: value.Error(), Quoted: true}
+	return
 }
 
 // String returns the contents of the Field as `key=value`.
 func (field Field) String() string {
-	return field.Name + "=" + field.StringValue
+	return field.Name + "=" + quotedValue(field)
 }
 
 // Json returns the contents of the Field as `"key":value`.

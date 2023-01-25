@@ -69,7 +69,7 @@ func TestEmit_WithWarnAndFields_ShouldNotBeEmpty(t *testing.T) {
 		t.Fatal("Port field was not in the log message")
 	}
 
-	if !strings.Contains(s, "hostname=localhost") {
+	if !strings.Contains(s, "hostname=\"localhost\"") {
 		t.Fatal("Hostname field was not in the log message")
 	}
 }

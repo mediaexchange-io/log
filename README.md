@@ -22,34 +22,67 @@ This library was inspired by:
 
 ## Usage
 
+Let's jump right in with a simple example:
+
+```go
+log.Info("The quick brown fox")
+// Output: 2019-12-31T20:02:03Z [main] INFO The quick brown fox
+```
+
 By default, `log` will emit messages on `os.Stderr` which is supposed to be
-an unbuffered stream. The destination can be changed with: 
+an unbuffered stream. This is good for logging because a crashing program can
+wipe or destroy buffers before they've been properly emptied. That's not
+desireable when diagnosing the cause of the crash!
+
+However, if necessary, the destination can be changed with: 
 
 ```go
 log.SetWriter(os.Stdout)
 ``` 
 
-To prevent console logging from being visible at all, use the discard writer:
+To prevent console logging from being visible at all, use Go's built-in
+discard writer:
 
 ```go
 log.SetWriter(ioutil.Discard)
 ```
 
-To send output to a UDP log aggregator, just set the address and port of the
-service as follows:
+To send output to a UDP aggregator that accepts JSON formatted logs, set the
+address and port of the service as follows:
 
 ```go
 log.SetServer("10.10.10.10:8080")
+log.Info("The quick brown fox")
+// Output: {"time":1577840523000,"name":"main","level":"INFO","message":"The quick brown fox"} 
 ```
 
-Now every log message is formatted in JSON and will be sent to the aggregator:
+It is often beneficial to emit additional information about the program's
+state a moment in time to aid in debugging. We call these "fields".
+Originally, this project used different field functions to handle different
+types. After extensive benchmarking, we found very little difference in
+operaton time or memory allocations vs. providing a single field function
+that uses reflection to handle values.
 
 ```go
-log.Info("The quick brown fox")
-// Output: {"time":1554370662469959000,"name":"main","level":"INFO","message":"The quick brown fox"} 
+url, _ := URL.Parse("https://google.com")
+log.Info("Connecting", F("host", url.Hostname()), F("port", url.Port()))
+// Output: 2019-12-31T20:02:03Z [main] INFO Connecting host="google.com" port=443
 ```
 
-`log` 
+This also works with the log aggregator:
+```go
+// (pretty) Output:
+{
+    "time": 1577840523000,
+    "name": "main",
+    "level": "INFO",
+    "message": "Connecting",
+    "fields": {
+        "host": "google.com",
+        "port": 443
+    }
+}
+```
 
 ## Contributing
 

@@ -133,73 +133,9 @@ func TestField_String(t *testing.T) {
 	Assert.That(field.String()).IsEqualTo("name=-9223372036854775807")
 
 	field = F("name", "value")
-	Assert.That(field.String()).IsEqualTo("name=value")
+	Assert.That(field.String()).IsEqualTo("name=\"value\"")
 
 	err := errors.New("error")
 	field = Err(err)
-	Assert.That(field.String()).IsEqualTo("error=error")
-}
-
-func BenchmarkField_Json(b *testing.B) {
-	var field Field
-
-	err := errors.New("error message")
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		field = F("name", true)
-		field.Json()
-
-		field = F("name", -127)
-		field.Json()
-
-		field = F("name", -32767)
-		field.Json()
-
-		field = F("name", -2147483647)
-		field.Json()
-
-		field = F("name", -9223372036854775807)
-		field.Json()
-
-		field = F("name", "value")
-		field.Json()
-
-		field = Err(err)
-		field.Json()
-	}
-}
-
-func BenchmarkField_String(b *testing.B) {
-	var field Field
-
-	err := errors.New("error message")
-
-	b.ReportAllocs()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		field = F("name", true)
-		field.String()
-
-		field = F("name", -127)
-		field.String()
-
-		field = F("name", -32767)
-		field.String()
-
-		field = F("name", -2147483647)
-		field.String()
-
-		field = F("name", -9223372036854775807)
-		field.String()
-
-		field = F("name", "value")
-		field.String()
-
-		field = Err(err)
-		field.String()
-	}
+	Assert.That(field.String()).IsEqualTo("error=\"error\"")
 }

@@ -32,7 +32,6 @@ const (
 
 var (
 	conn        *net.UDPConn
-	emitJson    bool
 	level       Level
 	programName string
 	writer      io.Writer
@@ -41,9 +40,6 @@ var (
 // init creates a default console logger that can be used immediately with no
 // further configuration necessary.
 func init() {
-	// By default the logger emits formatted text, not JSON
-	emitJson = false
-
 	// Set the minimum logging level emitted to INFO
 	level = INFO
 
@@ -52,11 +48,6 @@ func init() {
 
 	// Default to stderr which is the Posix standard as it's unbuffered.
 	writer = os.Stderr
-}
-
-// SetEmitJson changes the type of output sent to the aggregator.
-func SetEmitJson(b bool) {
-	emitJson = b
 }
 
 // SetLevel changes the minimum level that is emitted. This is used to prevent
@@ -87,8 +78,6 @@ func SetServer(address string) {
 	if err != nil {
 		panic(err)
 	}
-
-	emitJson = true
 }
 
 // Debug emits a message with the DEBUG level.
@@ -119,7 +108,7 @@ func Error(msg string, fields ...Field) {
 	}
 }
 
-// emit generates the log message and sends it.
+// emit generates the log message and writes it.
 func emit(level Level, message string, fields []Field) {
 	// Pull the timestamp now so the UDP aggregator and the console are consistent.
 	t := time.Now().UTC()
@@ -131,21 +120,20 @@ func emit(level Level, message string, fields []Field) {
 	}
 
 	// Send the message to the console logger.
-	if emitJson {
-		writer.Write(json(t, message, fields))
-	} else {
-		writer.Write(text(t, message, fields))
-	}
+	writer.Write(text(t, message, fields))
 }
 
+// json returns a string that contains a full log message, including timestamp, program name, log level, message, and fields, formatted as JSON suitable for log aggregation.
 func json(t time.Time, message string, fields []Field) []byte {
 	return []byte("{\"time\":" + strconv.FormatInt(t.UnixNano(), 10) + ",\"name\":\"" + programName + "\",\"level\":\"" + level.String() + "\",\"message\":\"" + message + "\",\"fields\":" + fieldJson(fields) + "}")
 }
 
+// text returns a string that contains a full log message, including timestamp, program name, log level, message, and fields, formatted as a string suitable for console output.
 func text(t time.Time, message string, fields []Field) []byte {
 	return []byte(t.Format(ISO8601Micro) + " [" + programName + "] " + level.String() + " " + message + fieldString(fields) + "\n")
 }
 
+// fieldJson returns a string that contains all of the fields formatted as {"name1":value, "name2":value2, ... "nameN":valueN}
 func fieldJson(fields []Field) string {
 	var builder strings.Builder
 	builder.WriteRune('{')
@@ -163,6 +151,7 @@ func fieldJson(fields []Field) string {
 	return builder.String()
 }
 
+// fieldString returns a string that contains all of the fields formatted as name1=value name2=value2 ... nameN=valueN
 func fieldString(fields []Field) string {
 	var builder strings.Builder
 	for _, field := range fields {
